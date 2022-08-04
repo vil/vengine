@@ -6,8 +6,6 @@ import me.vp.vengine.util.Plane;
 import me.vp.vengine.util.Polygon;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.world.World;
-import me.vp.vengine.util.world.terrain.MarsTerrain;
-import me.vp.vengine.util.world.terrain.Terrain;
 import me.vp.vengine.util.world.voxel.Voxel;
 import me.vp.vengine.window.Window;
 
@@ -36,8 +34,7 @@ public class Player {
     public Plane viewPlane;
     public PlayerListener input;
     public Polygon polygonMouseOver;
-    public Constructor<?> voxelConstructor;
-    private World world;
+    public Constructor<Voxel> voxelConstructor;
     private double horizontalLook;
     private double verticalLook;
 
@@ -58,7 +55,6 @@ public class Player {
     }
 
     public void setWorld(World w) {
-        this.world = w;
     }
 
     public void processMouse() {
@@ -94,21 +90,17 @@ public class Player {
         try {
             if (this.input.leftClick)
                 if (this.polygonMouseOver != null)
-                    this.world.chunks.removeVoxel(this.polygonMouseOver.parent);
-            // this.polygonMouseOver.alpha = 255;
+                    World.chunks.removeVoxel(this.polygonMouseOver.parent);
         } catch (Exception e) {
-            e.printStackTrace();
+            Vengine.LOGGER.warning("Error while processing mouse click..! : " + e.getMessage());
         }
 
         try {
             if (this.input.rightClick)
                 if (this.polygonMouseOver != null)
-                    this.world.chunks.addVoxel((Voxel) this.voxelConstructor.newInstance(
-                            new Vector(this.polygonMouseOver.parent.position.add(this.polygonMouseOver.normal))
-                    ));
-            // this.polygonMouseOver.alpha = 0;
+                    World.chunks.addVoxel(this.voxelConstructor.newInstance(new Vector(this.polygonMouseOver.parent.position.add(this.polygonMouseOver.normal))));
         } catch (Exception e) {
-            e.printStackTrace();
+            Vengine.LOGGER.warning("Error while processing mouse click..! : " + e.getMessage());
         }
     }
 
@@ -170,15 +162,15 @@ public class Player {
         if (World.isMars) graphics.setColor(Color.WHITE);
         else graphics.setColor(Color.black);
         graphics.drawString("Vengine " + Vengine.version + " by Vp", 10, 20);
-        graphics.drawString("Current terrain: " + (World.isMars ? "Mars" : "Normal"), 150, 30);
-        graphics.drawString("Press F9/F10/F11 to change terrain!", 150, 50);
+        graphics.drawString("Current terrain: " + (World.isMars ? "Mars" : "Normal"), 200, 20);
+        graphics.drawString("Press F9/F10/F11 to change terrain!", 200, 40);
         graphics.drawString("FPS: " + (int) world.fps, 10, 40);
         graphics.drawString("XYZ: " + this.viewFrom, 10, 60);
         graphics.drawString("Look: " + this.viewTo.subtract(this.viewFrom), 10, 80);
         graphics.drawString("Zoom: " + this.zoom, 10, 100);
 
         graphics.drawString("Objects loaded: ", 10, 160);
-        graphics.drawString("Chunks: " + world.totalChunks / world.chunks.terrain.maxZ, 10, 180);
+        graphics.drawString("Chunks: " + world.totalChunks / World.chunks.terrain.maxZ, 10, 180);
         graphics.drawString("Voxels: " + world.totalVoxels, 10, 200);
         graphics.drawString("Polygons: " + world.renderObjects.size() + "/" + world.totalPolygons, 10, 220);
 

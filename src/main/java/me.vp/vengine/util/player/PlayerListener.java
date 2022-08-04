@@ -1,18 +1,20 @@
 package me.vp.vengine.util.player;
 
+import me.vp.vengine.Vengine;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.world.World;
+import me.vp.vengine.util.world.voxel.Voxel;
 import me.vp.vengine.util.world.voxel.voxels.Grass;
 
 import java.awt.event.*;
 
 public class PlayerListener implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 
+    private final Player player;
     public boolean left, right, forward, back, up, down, sprint, exit;
     public int mouseX, mouseY, mouseScroll;
     public boolean rightClick, leftClick, mouseDown;
     public long mouseDownTime;
-    private final Player player;
 
     public PlayerListener(Player player) {
         this.player = player;
@@ -30,15 +32,15 @@ public class PlayerListener implements KeyListener, MouseListener, MouseMotionLi
             case KeyEvent.VK_ESCAPE -> exit = true;
             case KeyEvent.VK_1 -> {
                 try {
-                    player.voxelConstructor = Grass.class.getDeclaredConstructor(Vector.class);
+                    player.voxelConstructor = Voxel.class.getConstructor(Grass.class);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Vengine.LOGGER.warning(e.getMessage());
                 }
             }
             case KeyEvent.VK_F9 -> World.changeTerrainToNormal();
             case KeyEvent.VK_F10 -> World.changeTerrainToMars();
             case KeyEvent.VK_F11 -> World.changeTerrainToDebug();
-            default -> throw new IllegalStateException("Unexpected value: " + key.getKeyCode());
+            default -> Vengine.LOGGER.warning("Key pressed: " + key.getKeyCode());
         }
     }
 
@@ -84,13 +86,8 @@ public class PlayerListener implements KeyListener, MouseListener, MouseMotionLi
         mouseDown = true;
         mouseDownTime = System.currentTimeMillis();
         switch (e.getButton()) {
-            case MouseEvent.BUTTON1:
-                leftClick = true;
-                break;
-            case MouseEvent.BUTTON3:
-                rightClick = true;
-                break;
-            default:
+            case MouseEvent.BUTTON1 -> leftClick = true;
+            case MouseEvent.BUTTON3 -> rightClick = true;
         }
         this.player.processMouse();
     }
@@ -98,13 +95,8 @@ public class PlayerListener implements KeyListener, MouseListener, MouseMotionLi
     public void mouseReleased(MouseEvent e) {
         mouseDown = false;
         switch (e.getButton()) {
-            case MouseEvent.BUTTON1:
-                leftClick = false;
-                break;
-            case MouseEvent.BUTTON3:
-                rightClick = false;
-                break;
-            default:
+            case MouseEvent.BUTTON1 -> leftClick = false;
+            case MouseEvent.BUTTON3 -> rightClick = false;
         }
     }
 

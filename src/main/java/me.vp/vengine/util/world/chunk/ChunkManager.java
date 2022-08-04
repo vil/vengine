@@ -1,5 +1,6 @@
 package me.vp.vengine.util.world.chunk;
 
+import me.vp.vengine.Vengine;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.world.terrain.Terrain;
 import me.vp.vengine.util.world.voxel.Voxel;

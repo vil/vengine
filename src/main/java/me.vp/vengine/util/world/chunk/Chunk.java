@@ -41,8 +41,7 @@ public class Chunk {
         if (this.contains(p)) {
             Vector q = p.absolute(this.position);
             return this.array[(int) q.x][(int) q.y][(int) q.z];
-        } else
-            throw new Exception("Error: Voxel " + p + " is not accessible from this chunk: " + this.position);
+        } else throw new Exception("Error: Voxel " + p + " is not accessible from this chunk: " + this.position);
     }
 
     public ArrayList<Voxel> getVoxelList() {

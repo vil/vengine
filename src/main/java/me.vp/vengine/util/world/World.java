@@ -6,7 +6,10 @@ import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.player.Player;
 import me.vp.vengine.util.world.chunk.Chunk;
 import me.vp.vengine.util.world.chunk.ChunkManager;
-import me.vp.vengine.util.world.terrain.*;
+import me.vp.vengine.util.world.terrain.FlatTerrain;
+import me.vp.vengine.util.world.terrain.MarsTerrain;
+import me.vp.vengine.util.world.terrain.NormalTerrain;
+import me.vp.vengine.util.world.terrain.Terrain;
 import me.vp.vengine.util.world.voxel.Voxel;
 import me.vp.vengine.window.Window;
 
@@ -29,6 +32,10 @@ public class World extends JPanel {
     public static Vector lightVector = new Vector(0, 0, 1);
     public static long seed;
     public static ChunkManager chunks;
+    public static Player player;
+    public static Vector lastPlayerChunk;
+    public static boolean isMars;
+    public static boolean isDebug = false;
     public int totalChunks = 0;
     public int totalVoxels = 0;
     public int totalPolygons = 0;
@@ -36,14 +43,9 @@ public class World extends JPanel {
     public boolean renderOutline = true;
     public boolean renderNormal = false;
     public ArrayList<Polygon> renderObjects = new ArrayList<>();
-    public static Player player;
-    public static Vector lastPlayerChunk;
     public double fps;
     public double frames;
-
     public ArrayList<Terrain> terrains = new ArrayList<>();
-    public static boolean isMars;
-    public static boolean isDebug = false;
 
     public World(long s, Player p) {
         super();
@@ -71,15 +73,8 @@ public class World extends JPanel {
         try {
             new Robot().mouseMove((int) (Vengine.windowX / 2f), (int) (Vengine.windowY / 2f));
         } catch (AWTException e) {
-            e.printStackTrace();
+            Vengine.LOGGER.warning(e.getMessage());
         }
-    }
-
-    public void hideMouse() {
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        BufferedImage cursorImage = new BufferedImage(1, 1, BufferedImage.TRANSLUCENT);
-        Cursor invisibleCursor = toolkit.createCustomCursor(cursorImage, new Point(0, 0), "InvisibleCursor");
-        this.setCursor(invisibleCursor);
     }
 
     public static void update() {
@@ -91,6 +86,32 @@ public class World extends JPanel {
             chunks.loadChunks(pc);
             lastPlayerChunk = pc;
         }
+    }
+
+    public static void changeTerrainToNormal() {
+        isMars = false;
+        chunks = new ChunkManager(new NormalTerrain(seed), 3);
+        update();
+    }
+
+    public static void changeTerrainToMars() {
+        isMars = true;
+        chunks = new ChunkManager(new MarsTerrain(seed), 3);
+        update();
+    }
+
+    public static void changeTerrainToDebug() {
+        isMars = false;
+        isDebug = true;
+        chunks = new ChunkManager(new FlatTerrain(seed), 3);
+        update();
+    }
+
+    public void hideMouse() {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        BufferedImage cursorImage = new BufferedImage(1, 1, BufferedImage.TRANSLUCENT);
+        Cursor invisibleCursor = toolkit.createCustomCursor(cursorImage, new Point(0, 0), "InvisibleCursor");
+        this.setCursor(invisibleCursor);
     }
 
     public void paint(Graphics g) {
@@ -139,9 +160,7 @@ public class World extends JPanel {
 
                     if (v.neighbors[k] == null || v.isSolid() && !v.neighbors[k].isSolid())
                         if (c.visibleDirections.contains(p.normal))
-                            if (p.update(player))
-                                this.renderObjects.add(p);
-
+                            if (p.update(player)) this.renderObjects.add(p);
                 }
             }
         }
@@ -159,23 +178,6 @@ public class World extends JPanel {
         }
     }
 
-    public static void changeTerrainToNormal() {
-        isMars = false;
-        chunks = new ChunkManager(new NormalTerrain(seed), 3);
-        update();
-    }
-    public static void changeTerrainToMars() {
-        isMars = true;
-        chunks = new ChunkManager(new MarsTerrain(seed), 3);
-        update();
-    }
-    public static void changeTerrainToDebug() {
-        isMars = false;
-        isDebug = true;
-        chunks = new ChunkManager(new FlatTerrain(seed), 3);
-        update();
-    }
-
     public void run() {
         double maxFPS = 60;
         double lastFPSCheck = 0;
@@ -186,22 +188,20 @@ public class World extends JPanel {
             lastRefresh = System.currentTimeMillis();
 
             lastFPSCheck += delta;
-            if (lastFPSCheck >= 1000) {
-                this.fps = this.frames;
+            if (lastFPSCheck > 1000) {
+                this.fps = this.frames / lastFPSCheck * 1000;
                 lastFPSCheck = 0;
                 this.frames = 0;
             }
-
-            if (delta < 1000.0 / maxFPS) {
+            if (delta < 1000 / maxFPS) {
                 try {
-                    Thread.sleep((long) (1000.0 / maxFPS - delta));
+                    Thread.sleep((long) (1000 / maxFPS - delta));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-
             this.repaint();
-            this.update();
+            update();
         }
     }
 

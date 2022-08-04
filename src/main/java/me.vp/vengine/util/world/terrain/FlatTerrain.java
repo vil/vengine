@@ -1,5 +1,6 @@
 package me.vp.vengine.util.world.terrain;
 
+import me.vp.vengine.Vengine;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.world.chunk.Chunk;
 import me.vp.vengine.util.world.noise.Noise;
@@ -29,7 +30,7 @@ public class FlatTerrain extends Terrain {
                     try {
                         chunk.addVoxel(new Grass(new Vector(x, y, z), true));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Vengine.LOGGER.warning(e.getMessage());
                     }
                 }
             }

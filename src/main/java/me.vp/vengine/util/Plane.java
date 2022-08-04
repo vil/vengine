@@ -8,11 +8,11 @@ package me.vp.vengine.util;
  */
 
 public class Plane {
+    private final Vector r1;
+    private final Vector r2;
 
     public Vector p;
     public Vector normal;
-    private final Vector r1;
-    private final Vector r2;
 
     public Plane(Polygon p) {
         this.p = p.getCentre();
