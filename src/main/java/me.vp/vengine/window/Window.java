@@ -1,6 +1,7 @@
 package me.vp.vengine.window;
 
 import javax.swing.*;
+import java.io.Serial;
 
 /*
  *
@@ -8,6 +9,7 @@ import javax.swing.*;
  *
  */
 public class Window extends JFrame {
+    @Serial
     private static final long serialVersionUID = 1L;
     public static double width = 1900;
     public static double height = 1080;

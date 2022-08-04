@@ -1,19 +1,19 @@
 package me.vp.vengine.util.world;
 
-import me.vp.vengine.Main;
+import me.vp.vengine.Vengine;
 import me.vp.vengine.util.Polygon;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.player.Player;
 import me.vp.vengine.util.world.chunk.Chunk;
 import me.vp.vengine.util.world.chunk.ChunkManager;
-import me.vp.vengine.util.world.terrain.FlatTerrain;
-import me.vp.vengine.util.world.terrain.Terrain;
+import me.vp.vengine.util.world.terrain.*;
 import me.vp.vengine.util.world.voxel.Voxel;
 import me.vp.vengine.window.Window;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -24,10 +24,11 @@ import java.util.Collections;
  */
 public class World extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     public static Vector lightVector = new Vector(0, 0, 1);
-    public long seed;
-    public ChunkManager chunks;
+    public static long seed;
+    public static ChunkManager chunks;
     public int totalChunks = 0;
     public int totalVoxels = 0;
     public int totalPolygons = 0;
@@ -35,12 +36,14 @@ public class World extends JPanel {
     public boolean renderOutline = true;
     public boolean renderNormal = false;
     public ArrayList<Polygon> renderObjects = new ArrayList<>();
-    public Player player;
-    public Vector lastPlayerChunk;
+    public static Player player;
+    public static Vector lastPlayerChunk;
     public double fps;
     public double frames;
 
     public ArrayList<Terrain> terrains = new ArrayList<>();
+    public static boolean isMars;
+    public static boolean isDebug = false;
 
     public World(long s, Player p) {
         super();
@@ -49,24 +52,24 @@ public class World extends JPanel {
         this.hideMouse();
 
         // Init player
-        this.player = p;
-        this.player.setWorld(this);
+        player = p;
+        player.setWorld(this);
 
         // user input
-        this.addKeyListener(this.player.input);
-        this.addMouseListener(this.player.input);
-        this.addMouseMotionListener(this.player.input);
-        this.addMouseWheelListener(this.player.input);
+        this.addKeyListener(player.input);
+        this.addMouseListener(player.input);
+        this.addMouseMotionListener(player.input);
+        this.addMouseWheelListener(player.input);
 
         // Init world
-        this.seed = s;
-        this.chunks = new ChunkManager(new FlatTerrain(s), 3); /* using flat terrain for debugging. */
-        this.update();
+        seed = s;
+        chunks = new ChunkManager(new NormalTerrain(s), 3);
+        update();
     }
 
     public static void centerMouse() {
         try {
-            new Robot().mouseMove((int) (Main.windowX / 2f), (int) (Main.windowY / 2f));
+            new Robot().mouseMove((int) (Vengine.windowX / 2f), (int) (Vengine.windowY / 2f));
         } catch (AWTException e) {
             e.printStackTrace();
         }
@@ -79,26 +82,27 @@ public class World extends JPanel {
         this.setCursor(invisibleCursor);
     }
 
-    public void update() {
+    public static void update() {
         if (player.input.mouseDown) if (System.currentTimeMillis() > player.input.mouseDownTime + 1000)
-            this.player.processMouseClick();
+            player.processMouseClick();
 
-        Vector pc = this.chunks.getChunkVector(this.player.viewFrom);
-        if (!pc.equals(this.lastPlayerChunk)) {
-            this.chunks.loadChunks(pc);
-            this.lastPlayerChunk = pc;
+        Vector pc = chunks.getChunkVector(player.viewFrom);
+        if (!pc.equals(lastPlayerChunk)) {
+            chunks.loadChunks(pc);
+            lastPlayerChunk = pc;
         }
     }
 
     public void paint(Graphics g) {
         // Clear screen and draw background
         super.paint(g);
-        g.setColor(new Color(140, 180, 180));
+        if (isMars) g.setColor(new Color(0, 0, 0));
+        else g.setColor(new Color(140, 180, 180));
         g.fillRect(0, 0, (int) Window.width, (int) Window.height);
 
         // Update user view
-        this.player.processMovement();
-        this.player.setPredeterminedInfo();
+        player.processMovement();
+        player.setPredeterminedInfo();
 
         // Update render objects
         this.setRenderObjects();
@@ -107,10 +111,10 @@ public class World extends JPanel {
 
         // Draw Polygons to screen
         for (Polygon p : this.renderObjects)
-            p.drawPolygon(g, this, this.player);
+            p.drawPolygon(g, this, player);
 
         // Draw Player UI
-        this.player.drawUI(g, this);
+        player.drawUI(g, this);
 
         // Update frames
         this.frames++;
@@ -122,8 +126,8 @@ public class World extends JPanel {
         this.totalPolygons = 0;
         this.renderObjects = new ArrayList<>();
 
-        for (Chunk c : this.chunks.loaded) {
-            c.setPrederterminedInfo(this.player);
+        for (Chunk c : chunks.loaded) {
+            c.setPrederterminedInfo(player);
             this.totalChunks++;
 
             for (Voxel v : c.getVoxelList()) {
@@ -135,7 +139,7 @@ public class World extends JPanel {
 
                     if (v.neighbors[k] == null || v.isSolid() && !v.neighbors[k].isSolid())
                         if (c.visibleDirections.contains(p.normal))
-                            if (p.update(this.player))
+                            if (p.update(player))
                                 this.renderObjects.add(p);
 
                 }
@@ -144,15 +148,32 @@ public class World extends JPanel {
     }
 
     public void setPolygonMouseOver() {
-        this.player.polygonMouseOver = null;
+        player.polygonMouseOver = null;
 
         for (int i = this.renderObjects.size() - 1; i >= 0; i--) {
             Polygon p = this.renderObjects.get(i);
             if (p.mouseOver()) {
-                this.player.polygonMouseOver = p;
+                player.polygonMouseOver = p;
                 break;
             }
         }
+    }
+
+    public static void changeTerrainToNormal() {
+        isMars = false;
+        chunks = new ChunkManager(new NormalTerrain(seed), 3);
+        update();
+    }
+    public static void changeTerrainToMars() {
+        isMars = true;
+        chunks = new ChunkManager(new MarsTerrain(seed), 3);
+        update();
+    }
+    public static void changeTerrainToDebug() {
+        isMars = false;
+        isDebug = true;
+        chunks = new ChunkManager(new FlatTerrain(seed), 3);
+        update();
     }
 
     public void run() {

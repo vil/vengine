@@ -13,19 +13,19 @@ import java.awt.*;
  *
  */
 
-public class Main {
-    public static final String version = "0.01b";
+public class Vengine {
+    public static final String version = "0.01-beta";
     public static double windowX;
     public static double windowY;
 
     public static void main(String[] args) {
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        Main.windowX = dimension.getWidth();
-        Main.windowY = dimension.getHeight();
+        Vengine.windowX = dimension.getWidth();
+        Vengine.windowY = dimension.getHeight();
 
         Player player = new Player(new Vector(0, 0, 70));
         World world = new World(0, player);
-        Window window = new Window("vengine " + version + " by Vp", 1900, 1080);
+        Window window = new Window("Vengine " + version + " by Vp", 1900, 1080);
         window.add(world);
         world.run();
     }

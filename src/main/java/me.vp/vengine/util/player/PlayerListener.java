@@ -35,6 +35,9 @@ public class PlayerListener implements KeyListener, MouseListener, MouseMotionLi
                     e.printStackTrace();
                 }
             }
+            case KeyEvent.VK_F9 -> World.changeTerrainToNormal();
+            case KeyEvent.VK_F10 -> World.changeTerrainToMars();
+            case KeyEvent.VK_F11 -> World.changeTerrainToDebug();
             default -> throw new IllegalStateException("Unexpected value: " + key.getKeyCode());
         }
     }

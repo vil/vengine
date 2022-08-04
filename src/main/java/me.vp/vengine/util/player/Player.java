@@ -1,11 +1,13 @@
 package me.vp.vengine.util.player;
 
 
-import me.vp.vengine.Main;
+import me.vp.vengine.Vengine;
 import me.vp.vengine.util.Plane;
 import me.vp.vengine.util.Polygon;
 import me.vp.vengine.util.Vector;
 import me.vp.vengine.util.world.World;
+import me.vp.vengine.util.world.terrain.MarsTerrain;
+import me.vp.vengine.util.world.terrain.Terrain;
 import me.vp.vengine.util.world.voxel.Voxel;
 import me.vp.vengine.window.Window;
 
@@ -62,7 +64,7 @@ public class Player {
     public void processMouse() {
         double difX = (this.input.mouseX - (int) (Window.width / 2f));
         double difY = (this.input.mouseY - (int) (Window.height / 2f));
-        difY -= Math.min(15, (Main.windowY - Window.height) / 2);
+        difY -= Math.min(15, (Vengine.windowY - Window.height) / 2);
         difY *= 6 - Math.abs(this.verticalLook) * 5;
 
         this.verticalLook -= difY / this.verticalLookSpeed;
@@ -84,11 +86,7 @@ public class Player {
         double r = Math.sqrt(1 - (this.verticalLook * this.verticalLook));
         this.viewVector = new Vector(r * Math.cos(this.horizontalLook), this.verticalLook, r * Math.sin(this.horizontalLook));
         this.viewVector.normalise();
-        /*this.viewTo = new Vector(
-                viewFrom.x + r * Math.cos(this.horzLook),
-                viewFrom.y + r * Math.sin(this.horzLook),
-                viewFrom.z + this.vertLook
-        );*/
+
         this.viewTo = this.viewFrom.add(this.viewVector);
     }
 
@@ -163,15 +161,19 @@ public class Player {
     }
 
     public void drawUI(Graphics graphics, World world) {
-        graphics.setColor(Color.black);
+        if (World.isMars) graphics.setColor(Color.WHITE);
+        else graphics.setColor(Color.black);
         graphics.drawLine((int) (Window.width / 2f) - this.aimSight, (int) (Window.height / 2f), (int) (Window.width / 2f) + this.aimSight, (int) (Window.height / 2f));
         graphics.drawLine((int) (Window.width / 2f), (int) (Window.height / 2f) - this.aimSight, (int) (Window.width / 2f), (int) (Window.height / 2f) + this.aimSight);
 
 
-        graphics.setColor(Color.black);
-        graphics.drawString("vengine " + Main.version + " by Vp", 10, 20);
+        if (World.isMars) graphics.setColor(Color.WHITE);
+        else graphics.setColor(Color.black);
+        graphics.drawString("Vengine " + Vengine.version + " by Vp", 10, 20);
+        graphics.drawString("Current terrain: " + (World.isMars ? "Mars" : "Normal"), 150, 30);
+        graphics.drawString("Press F9/F10/F11 to change terrain!", 150, 50);
         graphics.drawString("FPS: " + (int) world.fps, 10, 40);
-        graphics.drawString("XYZ: " + this.viewFrom.scale(1 / Voxel.length), 10, 60);
+        graphics.drawString("XYZ: " + this.viewFrom, 10, 60);
         graphics.drawString("Look: " + this.viewTo.subtract(this.viewFrom), 10, 80);
         graphics.drawString("Zoom: " + this.zoom, 10, 100);
 

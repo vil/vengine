@@ -2,8 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.6">
-      <module name="vengine.main" target="18" />
-      <module name="vengine.test" target="18" />
+      <module name="vengine.app" target="18" />
+      <module name="vengine.app.main" target="18" />
+      <module name="vengine.app.test" target="18" />
     </bytecodeTargetLevel>
   </component>
 </project>
