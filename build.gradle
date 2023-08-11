@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'me.vp.vengine.Main'
+mainClassName = 'dev.vili.vengine.Vengine'
 
 repositories {
     mavenCentral()
